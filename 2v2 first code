@@ -1,0 +1,88 @@
+#include "../Header/StdAfx.h"
+#include "../Header/BallInfo.h"
+
+
+
+CBallInfo::CBallInfo(void)
+{
+	last_centerPt=centerPt=CPoint(-1,-1);
+	time=-1;
+}
+
+CBallInfo::~CBallInfo(void)
+{
+}
+
+
+void CBallInfo::SetBallPoint(CPoint pt,BYTE tm,BYTE r)
+{
+	last_centerPt=centerPt;
+	centerPt=pt;
+	time=tm;
+	radius=r;
+	CalV();
+};
+
+CPoint CBallInfo::GetBallPoint()
+{
+	return centerPt;
+};
+
+double CBallInfo::GetVball()
+{
+	return v_ball;
+};
+
+double CBallInfo::GetVdirection() 
+{
+	return v_direction;
+};
+CPoint CBallInfo::GetLastBallPoint()
+{
+	return last_centerPt;
+}
+
+void CBallInfo::operator =(BALLINFO others)
+{
+	memcpy((BALLINFO*)this,&others,sizeof(BALLINFO));
+};
+
+void CBallInfo::GetBallInfo(BALLINFO &info)
+{
+	memcpy(&info,(BALLINFO*)this,sizeof(BALLINFO));
+};
+
+int CBallInfo::GetRadius()
+{
+	return radius;
+};
+
+void CBallInfo::CalV()
+{
+	if (centerPt.x==-1)
+	{
+		v_ball=0.0;
+		v_direction=0.0;
+	}
+	else
+	{
+		
+		double time=this->time*1.0*TIMESTEP;            /**TimeStep=0.04,表示表示40毫秒,Time的用法,待定*/
+		CPoint cpt=centerPt-last_centerPt;
+		v_direction=atan2((double)cpt.y,(double)cpt.x);
+		double x,y;
+		x=cpt.x*POOL_WIDTH/REGBMP_WIDTH;                /**待修改，目前是宏定义，缺少灵活性*/
+		y=cpt.y*POOL_HEIGHT/REGBMP_HEIGHT;              /**待修改，目前是宏定义，缺少灵活性*/
+
+		v_ball=sqrt(x*x+y*y)/time;		
+	}			
+};
+
+CPoint CBallInfo::GetBeatPoint(CPoint goalpt)
+{
+	CPoint pt=goalpt-centerPt;
+	double dir=atan2((double)pt.y,(double)pt.x);
+	pt.x=centerPt.x-radius*cos(dir);                    /**原始为pt.x=centerPt.x-20*cos(dir) 2014.01*/ 
+	pt.y=centerPt.y-radius*sin(dir);                    /**原始为pt.y=centerPt.y-18*sin(dir) 2014.01*/
+	return pt;
+}
